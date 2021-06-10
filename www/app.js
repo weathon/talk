@@ -10,18 +10,23 @@ const App = new Vue({
 		videoEnabled: true,
 		screenshareEnabled: false,
 		showIntro: true,
-		showChat: false,
+		showChat: true,
 		showSettings: false,
 		hideToolbar: false,
 		selectedAudioDeviceId: "",
 		selectedVideoDeviceId: "",
 		name: window.localStorage.name || "",
 		typing: "",
-		chats: [],
+		chats: [{
+			type: "chat",
+			name: "System",
+			message: "This class is recorded. A video of only the teacher-side video and both-side audio will be uploaded to the website soon after the tutoring ends.",
+			date: new Date().toISOString(),
+		}]
 	},
 	computed: {},
 	methods: {
-		copyURL: function() {
+		copyURL: function () {
 			navigator.clipboard.writeText(this.roomLink).then(
 				() => {
 					this.copyText = "Copied 👍";
@@ -30,23 +35,23 @@ const App = new Vue({
 				(err) => console.error(err)
 			);
 		},
-		audioToggle: function(e) {
+		audioToggle: function (e) {
 			e.stopPropagation();
 			localMediaStream.getAudioTracks()[0].enabled = !localMediaStream.getAudioTracks()[0].enabled;
 			this.audioEnabled = !this.audioEnabled;
 		},
-		videoToggle: function(e) {
+		videoToggle: function (e) {
 			e.stopPropagation();
 			localMediaStream.getVideoTracks()[0].enabled = !localMediaStream.getVideoTracks()[0].enabled;
 			this.videoEnabled = !this.videoEnabled;
 		},
-		toggleSelfVideoMirror: function() {
+		toggleSelfVideoMirror: function () {
 			document.querySelector("#videos .video #selfVideo").classList.toggle("mirror");
 		},
-		nameToLocalStorage: function() {
+		nameToLocalStorage: function () {
 			window.localStorage.name = this.name;
 		},
-		screenShareToggle: function(e) {
+		screenShareToggle: function (e) {
 			e.stopPropagation();
 			let screenMediaPromise;
 			if (!App.screenshareEnabled) {
@@ -76,7 +81,7 @@ const App = new Vue({
 					attachMediaStream(document.getElementById("selfVideo"), newStream);
 					this.toggleSelfVideoMirror();
 
-					screenStream.getVideoTracks()[0].onended = function() {
+					screenStream.getVideoTracks()[0].onended = function () {
 						if (App.screenshareEnabled) App.screenShareToggle();
 					};
 				})
@@ -85,7 +90,21 @@ const App = new Vue({
 					console.error(e);
 				});
 		},
-		changeCamera: function(deviceId) {
+		startrecord: function () {
+			// alert("Recording a meeting might be illegal in some cases. Please obtain recording consent before you start.");
+			// alert("For privacy reasons, you can ONLY record the video from your side. A class video of ONLY the teacher's side will be uploaded to the website soon after the tutoring ends.")
+			// //message
+			// 	const chatMessage = {
+			// 		type: "chat",
+			// 		name: this.name || "Unnamed",
+			// 		message: (this.name || "Unnamed")+" started a recordof this meeting.",
+			// 		date: new Date().toISOString(),
+			// 	};
+			// 	this.chats.push(chatMessage);
+			// 	Object.keys(dataChannels).map((peer_id) => dataChannels[peer_id].send(JSON.stringify(chatMessage)));
+			alert("For privacy reasons, this function is disabled. A class video of ONLY the teacher-side video and both side audio will be uploaded to the website soon after the tutoring ends.")
+		},
+		changeCamera: function (deviceId) {
 			navigator.mediaDevices
 				.getUserMedia({ video: { deviceId: deviceId } })
 				.then((camStream) => {
@@ -106,7 +125,7 @@ const App = new Vue({
 					alert("Error while swaping camera");
 				});
 		},
-		changeMicrophone: function(deviceId) {
+		changeMicrophone: function (deviceId) {
 			navigator.mediaDevices
 				.getUserMedia({ audio: { deviceId: deviceId } })
 				.then((micStream) => {
@@ -126,7 +145,7 @@ const App = new Vue({
 					alert("Error while swaping microphone");
 				});
 		},
-		linkify: function(str) {
+		linkify: function (str) {
 			return str.replace(/(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%]+/gi, (match) => {
 				let displayURL = match
 					.trim()
@@ -137,16 +156,16 @@ const App = new Vue({
 				return `<a href="${url}" target="_blank" class="link" rel="noopener">${displayURL}</a>`;
 			});
 		},
-		edit: function(e) {
+		edit: function (e) {
 			this.typing = e.srcElement.textContent;
 		},
-		paste: function(e) {
+		paste: function (e) {
 			e.preventDefault();
 			const clipboardData = e.clipboardData || window.clipboardData;
 			const pastedText = clipboardData.getData("Text");
 			document.execCommand("inserttext", false, pastedText.replace(/(\r\n\t|\n|\r\t)/gm, " "));
 		},
-		sendChat: function(e) {
+		sendChat: function (e) {
 			e.stopPropagation();
 			e.preventDefault();
 			if (this.typing.length) {
@@ -164,7 +183,7 @@ const App = new Vue({
 				composeElement.blur;
 			}
 		},
-		handleIncomingDataChannelMessage: function(chatMessage) {
+		handleIncomingDataChannelMessage: function (chatMessage) {
 			switch (chatMessage.type) {
 				case "chat":
 					this.showChat = true;
@@ -174,7 +193,7 @@ const App = new Vue({
 					break;
 			}
 		},
-		formatDate: function(datestring) {
+		formatDate: function (datestring) {
 			const seconds = Math.floor((new Date() - new Date(datestring)) / 1000);
 			let interval = seconds / 31536000;
 			if (interval > 1) return Math.floor(interval) + "Y";

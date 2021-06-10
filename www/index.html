@@ -40,7 +40,7 @@
 			<div id="intro" v-if="showIntro && !showChat && !showSettings">
 				<p>
 					<strong>Talk</strong> is a free & open-source video conference app for the web. <br />Works in all major
-					browsers. No signups. No downloads. 100% peer-to-peer.
+					browsers. No signups. No downloads. 100% peer-to-peer. This is a modified version made by Weathon.
 				</p>
 				<p>
 					<small>
@@ -113,6 +113,10 @@
 					Mirror / Unmirror
 					<small class="light">(self-view)</small>
 				</div>
+				<div class="copy link" v-on:click="startrecord">
+					<a>Record This Meeting 🎥</a>
+				</div>
+				<br/>
 			</div>
 
 			<div id="actionsWrap" v-bind:class="hideToolbar ? 'hidden' : ''">
